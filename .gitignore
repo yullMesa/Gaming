@@ -1,0 +1,10 @@
+Assets/
+archive/
+__pycache__/
+.env
+match.mov
+scripts/
+teser/
+frames_extraidos/
+yolov8n.pt
+Framework/
