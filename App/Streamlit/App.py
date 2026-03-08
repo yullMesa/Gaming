@@ -79,3 +79,18 @@ with col_stats:
                 st.json(rangos_seleccionados) 
             else:
                 st.warning("No hay rangos válidos para enviar (Fin debe ser mayor a Inicio).")
+
+    with st.expander("📈Gráficos de Rendimiento (Visual Metrics)"):
+        st.write("Aquí se mostrarán los gráficos de rendimiento basados en los datos analizados.")
+        # Aquí irían tus gráficos, por ahora solo un placeholder
+        st.line_chart([1, 2, 3, 4, 5])
+
+    with st.expander("📝Feedback Narrativo (Natural Language Generation)"):
+        st.write("Aquí se generará un feedback narrativo basado en el análisis de tu gameplay.")
+        # Placeholder para el feedback narrativo
+        st.markdown("""
+        **Feedback Ejemplo:**
+        - En el minuto 2:30, tu tiempo de reacción fue excelente.
+        - En el minuto 5:00, notamos una caída en tu precisión.
+        - Recomendación: Practica más en situaciones de alta presión para mejorar tu rendimiento general.
+        """)
