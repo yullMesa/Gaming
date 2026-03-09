@@ -1,3 +1,4 @@
+import requests
 import streamlit as st
 import tkinter as tk
 from tkinter import filedialog
@@ -35,7 +36,7 @@ with col_video:
     # yt_link viene del st.text_input de la sección de entrada
     st.video(yt_link) 
     
-    st.divider()
+st.divider()
 
 with col_stats:
     st.subheader("🕵️ Diagnóstico YSM")
@@ -66,20 +67,20 @@ with col_stats:
                 rangos_seleccionados.append(f"{ini}-{fin}")
 
         # 1. El botón que "dispara" la acción
-        if st.button("Enviar al Backend", use_container_width=True):
+        if st.button("Enviar", use_container_width=True):
             
-            # 2. Verificamos que la lista no esté vacía
-            if rangos_seleccionados:
-                st.success(f"Enviando {len(rangos_seleccionados)} segmentos al backend...")
+            if ruta_final and rangos_seleccionados:
+                tiempos_string = ",".join(rangos_seleccionados)
                 
-                # 3. Aquí es donde llamas a tu función de lógica pura
-                # mi_backend_ocr(rangos_seleccionados)
+                # Enviamos solo la ruta y los tiempos al backend
+                params = {"ruta": ruta_final, "tiempos": tiempos_string}
+                response = requests.post("http://localhost:8000/procesar-todo/", params=params)
                 
-                # Ejemplo de qué tiene la lista en ese momento:
-                st.json(rangos_seleccionados) 
-            else:
-                st.warning("No hay rangos válidos para enviar (Fin debe ser mayor a Inicio).")
-
+                if response.status_code == 200:
+                    st.success("✅ Backend trabajando. YOLO está analizando los frames.")
+                else:
+                    st.error("❌ Error al contactar el backend. Asegúrate de que esté corriendo.")
+                    
     with st.expander("📈Gráficos de Rendimiento (Visual Metrics)"):
         st.write("Aquí se mostrarán los gráficos de rendimiento basados en los datos analizados.")
         # Aquí irían tus gráficos, por ahora solo un placeholder
