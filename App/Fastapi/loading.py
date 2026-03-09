@@ -8,7 +8,7 @@ from ultralytics import YOLO
 import pytesseract
 import time
 import shutil
-from Yoloo import analizar_gameplay_aaa , analizar_gameplay_robusto
+from Yoloo import analizar_gameplay_aaa 
 
 app = FastAPI()
 
@@ -106,7 +106,7 @@ def proceso_maestro_ysm(video_path, rangos):
         if os.path.exists(ruta_img):
             frame = cv2.imread(ruta_img)
             # Ejecutas la lógica robusta
-            res = analizar_gameplay_robusto(frame, os.path.basename(ruta_img))
+            res = analizar_gameplay_aaa(frame, os.path.basename(ruta_img))
             
             metadata_final.append({
                 "seg": round(f_id / fps, 2),
