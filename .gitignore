@@ -9,3 +9,4 @@ frames_extraidos/
 yolov8n.pt
 Framework/
 *.pyc
+Db/

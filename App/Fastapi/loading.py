@@ -8,7 +8,7 @@ from ultralytics import YOLO
 import pytesseract
 import time
 import shutil
-from Db.Yoloo import analizar_gameplay
+from Yoloo import analizar_gameplay_aaa , analizar_gameplay_robusto
 
 app = FastAPI()
 
@@ -59,7 +59,7 @@ if os.path.exists(ruta_tesseract_exe):
     pytesseract.pytesseract.tesseract_cmd = ruta_tesseract_exe
 else:
     print(f"❌ ERROR: Tesseract no está en {ruta_tesseract_exe}")
-    
+
 
 def proceso_maestro_ysm(video_path, rangos):
     start_time = time.time() # Timer global
@@ -106,7 +106,7 @@ def proceso_maestro_ysm(video_path, rangos):
         if os.path.exists(ruta_img):
             frame = cv2.imread(ruta_img)
             # Ejecutas la lógica robusta
-            res = analizar_gameplay(frame, os.path.basename(ruta_img))
+            res = analizar_gameplay_robusto(frame, os.path.basename(ruta_img))
             
             metadata_final.append({
                 "seg": round(f_id / fps, 2),
