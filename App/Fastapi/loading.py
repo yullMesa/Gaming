@@ -8,7 +8,14 @@ from ultralytics import YOLO
 import pytesseract
 import time
 import shutil
-from Yoloo import analizar_gameplay_aaa 
+from Yoloo import PATH_SQLITE, analizar_gameplay_aaa 
+import sqlite3
+from pathlib import Path
+ruta_raiz = Path(__file__).resolve().parent.parent.parent # Sube hasta 'Gaming'
+if str(ruta_raiz) not in sys.path:
+    sys.path.append(str(ruta_raiz))
+
+from Framework.Evalua.teser_process import procesar_pendientes_ocr
 
 app = FastAPI()
 
@@ -112,29 +119,41 @@ def proceso_maestro_ysm(video_path, rangos):
                 "seg": round(f_id / fps, 2),
                 "data": res
             })
-
+    for ruta_img, f_id in frames_procesados:
+        if os.path.exists(ruta_img):
+            frame = cv2.imread(ruta_img)
+            # Ejecutas la lógica robusta
+            res = analizar_gameplay_aaa(frame, os.path.basename(ruta_img))
+            
+            metadata_final.append({
+                "seg": round(f_id / fps, 2),
+                "data": res
+            })
+    
     # Al terminar, ejecutamos la limpieza que querías
-    shutil.rmtree(OUTPUT_DIR)
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    # --- Lógica de borrado seguro ---
+    def limpieza_segura(carpeta_frames):
+        conn = sqlite3.connect(PATH_SQLITE)
+        cursor = conn.cursor()
+        
+        # Verificamos si hay algo pendiente de procesar por Tesseract
+        cursor.execute('SELECT COUNT(*) FROM coordenadas_ocr WHERE procesado = 0')
+        pendientes = cursor.fetchone()[0]
+        
+        if pendientes == 0:
+            print("🚀 Tesseract terminó. Borrando imágenes...")
+            shutil.rmtree(carpeta_frames)
+            os.makedirs(carpeta_frames, exist_ok=True)
+        else:
+            print(f"⏳ Esperando... faltan {pendientes} lecturas de Tesseract.")
+        
+        conn.close()
 
-    print("🧹 Fase 2 completada y carpeta de frames limpia.")
-    # --- FASE 3: CIERRE Y REPORTE ---
-    with open(os.path.join(PATH_DB, "gameplay_data.json"), "w") as f:
-        json.dump(metadata_final, f, indent=4)
+    print("🕵️ Iniciando Tesseract sobre coordenadas guardadas...")
+    procesar_pendientes_ocr() # <--- Llamamos al procesador
 
-    end_time = time.time()
-    duracion = round(end_time - start_time, 7)
-    print(f"🏆 Proceso total finalizado en {duracion} segundos.")
-
-
-    try:
-        # Borramos todo el contenido de la carpeta de frames
-        shutil.rmtree(OUTPUT_DIR)
-        # La recreamos vacía para el siguiente proceso
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        print(f"🧹 Carpeta de frames limpia para el próximo análisis.")
-    except Exception as e:
-        print(f"⚠️ No se pudo limpiar la carpeta: {e}")
+    print("🧹 Ejecutando limpieza de frames...")
+    limpieza_segura("Assets/frames_extraidos")
 
 @app.post("/procesar-todo/")
 async def endpoint_maestro(background_tasks: BackgroundTasks, ruta: str, tiempos: str):
